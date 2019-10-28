@@ -1,0 +1,176 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  font-size: 14px;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.border-top {
+  border-top: 1px solid #e5e5e5;
+}
+.border-bottom {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px; /* Vertically center the text there */
+}
+
+
+
+/* Animation */
+.box {
+  margin: 0 auto;
+  padding: 0 auto;
+  position: relative;
+ 
+}
+.box b {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #FFFF;
+  box-shadow: inset -5px -5px 5px rgba(0,0,0,.6), 15px 15px 2px rgba(0,0,0,.04);
+  position: absolute;
+  animation: moveX 1.9s linear 0s infinite alternate, moveY 0.9s linear 0s infinite alternate;
+}
+
+
+@keyframes moveX {
+  from { left: 4.7%; } to { left: 94.3%; }
+}
+@keyframes moveY {
+  from { top: 7.1%; } to { top: 106%; }
+}
+@keyframes movePY {
+  from { top: 15%; } to { top: 85%; }
+}
+
+
+/* Chrome bars */
+.barl{
+  background-color: silver;
+  height: 99.58%;
+  width: 5%;
+  position: absolute;
+  right:0;
+  top:57px;
+  bottom: 0;
+}
+
+.playerl{
+  display: block;
+  width: 5%;
+  height: 80px;
+  border-radius: 22%;
+  left: 0;
+  background-color: blue;
+  position: absolute;
+  animation: movePY 2.4s linear 0s infinite alternate;
+  z-index: 100;
+}
+
+.barr{
+  background-color: silver;
+  height: 99.58%;
+  width: 5%;
+  position: absolute;
+  left:0;
+  top:57px;
+  bottom: 0;
+}
+
+  .playerr{
+    display: block;
+    width: 5%;
+    height: 80px;
+    border-radius: 22%;
+    right: 0;
+    background-color: red;
+    position: absolute;
+    animation: movePY 2.0s linear 0s infinite alternate;
+    z-index: 100;
+  }
+
+  .winnerImage{
+    /* animation: rotation 2s linear; */
+    animation: shake 0.5s;
+    animation-iteration-count: 2;
+
+  }
+  @keyframes rotation {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(359deg);
+    }
+  }
+  @keyframes shake {
+    0% { transform: translate(2px, 1px) rotate(0deg); }
+    10% { transform: translate(-2px, -4px) rotate(-3deg);}
+    20% { transform: translate(-5px, 2px) rotate(2deg); }
+    30% { transform: translate(6px, 4px) rotate(0deg); }
+    40% { transform: translate(1px, -3px) rotate(3deg); }
+    50% { transform: translate(-3px, 4px) rotate(-4deg);}
+    60% { transform: translate(-5px, 3px) rotate(0deg); }
+    70% { transform: translate(5px, 3px) rotate(-3deg); }
+    80% { transform: translate(-2px, -3px) rotate(3deg); }
+    90% { transform: translate(3px, 4px) rotate(0deg); }
+    100% { transform: translate(3px, -4px) rotate(-3deg); }
+  }
