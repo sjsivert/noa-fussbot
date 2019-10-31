@@ -6,7 +6,8 @@
     <title>@ViewData["Title"] - Making Waves</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
-    
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link href="@Url.Content("~/css/site.css")" rel="stylesheet" type="text/css" />
     @RenderSection("Styles", false)
 </head>
@@ -43,15 +44,53 @@
     </div>
            <b></b></div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer text-muted">
         <div class="container">
             &copy; 2019 - MW
         </div>
     </footer>
+    
+    <script>
+        var f = ['🕺', '⚽', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '🚶'];
+          async function sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
+        }
+        async function loop() {
+            var counter = 1;
+            var countForward = true;
+            while(true){
+                f[counter%f.length] = '_';
+                if(countForward){
+                    counter += 1;
+                } else{
+                    counter -= 1;
+                }
+                if(counter == f.length){ // if at end
+                    countForward = false;
+                    f[f.length-1] = '🏃‍';
+                    f[f.length-2] = '⚽';
+                    location.hash = f.join('');
+                    await sleep(300);
+                } else if (counter == 1){ // if back at start
+                    countForward = true;
+                    f[0] = '💃';
+                    f[counter%f.length] = '⚽';
+                    location.hash = f.join('');
+                    await sleep(300);
+                } else if(counter > 1 && counter < f.length-2){ // inbetween
+                    f[0] = '🕺';
+                    f[f.length-1] = '🚶';
+                    f[counter] = '⚽';
+                    location.hash = f.join('');
+                    await sleep(50);
+                } 
+            }
+        }
+        loop();
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
-
 </body>
 </html>

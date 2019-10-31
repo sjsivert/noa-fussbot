@@ -105,7 +105,8 @@ body {
 /* Chrome bars */
 .barl{
   background-color: silver;
-  height: 99.58%;
+  /* height: 99.58%; */
+  height: 100%;
   width: 5%;
   position: absolute;
   right:0;
@@ -127,7 +128,8 @@ body {
 
 .barr{
   background-color: silver;
-  height: 99.58%;
+  /* height: 99.58%; */
+  height: 100%;
   width: 5%;
   position: absolute;
   left:0;

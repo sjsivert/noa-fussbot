@@ -125,3 +125,5 @@ C:\Users\jonas.rolstad\source\repos\vscodecore\bin\Debug\netcoreapp3.0\zh-Hans\M
 C:\Users\jonas.rolstad\source\repos\vscodecore\bin\Debug\netcoreapp3.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
 c:\Users\jonas.rolstad\source\repos\vscodecore\obj\Debug\netcoreapp3.0\Razor\Views\Contester\Index.cshtml.g.cs
 C:\Users\jonas.rolstad\source\repos\vscodecore\obj\Debug\netcoreapp3.0\Razor\Views\Contester\Create.cshtml.g.cs
+c:\Users\jonas.rolstad\source\repos\vscodecore\bin\Debug\netcoreapp3.0\RestSharp.NetCore.dll
+c:\Users\jonas.rolstad\source\repos\vscodecore\bin\Debug\netcoreapp3.0\RestSharp.Newtonsoft.Json.NetCore.dll

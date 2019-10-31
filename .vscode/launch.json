@@ -19,7 +19,8 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:5001"
+                "ASPNETCORE_URLS": "http://localhost:5001",
+                "slackwebhookurl": "https://hooks.slack.com/services/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"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

@@ -5,28 +5,32 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using vscodecore.Models;
+using System.Net.Http;
+using Newtonsoft.Json;
+
 
 namespace vscodecore.Controllers
 {
     public class ContesterController : Controller
     {
+        private static readonly HttpClient client = new HttpClient();
+
+        [HttpGet] // Gets the frontpage
         public async Task<IActionResult> Index()
         {
-            ViewData["Message"] = "Hello, This is my Contester view(data)";
             using (var context = new EFCoreWebFussballContext())
             {
                 var allContesters = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
-
-                return View(allContesters.OrderByDescending(x => x.Score).ThenByDescending(y => y.GamesPlayed));
+                return View(allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed));
             }
         }
 
-        [HttpGet]
+        [HttpGet] // Get the create-page view
         public IActionResult Create()
         {
             return View();
         }
-        [HttpPost]
+        [HttpPost] // Create a new contester
         public async Task<IActionResult> Create([Bind("FirstName, LastName")] Contester contester)
         {
             using (var context = new EFCoreWebFussballContext())
@@ -37,13 +41,14 @@ namespace vscodecore.Controllers
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 context.Add(contester);
                 await context.SaveChangesAsync();
-                return RedirectToAction("Index");
             }
+            return RedirectToAction("Index");
         }
 
-        [HttpGet] // Fordi ActionLink er en GET..
+        [HttpGet] // Submit a win // Fordi ActionLink er en GET.. 
         public async Task<IActionResult> AddWin(int contesterId)
         {
+            var leaderPre = await checkLeaderPre();
             var contester = new Contester();
             using (var context = new EFCoreWebFussballContext())
             {
@@ -52,13 +57,22 @@ namespace vscodecore.Controllers
                 contester.GamesPlayed += 1;
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 await context.SaveChangesAsync();
+                string message = $"{contester.ToString()} submitted a win.";
+                LogToSlack(message);
+            }
+            var leaderPost = await checkLeaderPost();
+            if (leaderPre != leaderPost.ContesterId)
+            {
+                string winnerMessage = $":crown: :crown: :crown: {leaderPost.ToString()} is now the new leader!!! :crown: :crown: :crown:";
+                LogToSlack(winnerMessage);
             }
             return RedirectToAction("Index");
         }
 
-        [HttpGet]
+        [HttpGet] // Submit a loss
         public async Task<IActionResult> AddLoss(int contesterId)
         {
+            var leaderPre = await checkLeaderPre();
             var contester = new Contester();
             using (var context = new EFCoreWebFussballContext())
             {
@@ -66,8 +80,98 @@ namespace vscodecore.Controllers
                 contester.GamesPlayed += 1;
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 await context.SaveChangesAsync();
+                string message = $"{contester.ToString()} submitted a loss.";
+                LogToSlack(message);
+            }
+            var leaderPost = await checkLeaderPost();
+            if (leaderPre != leaderPost.ContesterId)
+            {
+                string winnerMessage = $":crown: :crown: :crown: {leaderPost.ToString()} is now the new leader!!! :crown: :crown: :crown:";
+                LogToSlack(winnerMessage);
             }
             return RedirectToAction("Index");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ProposeGame()
+        {
+            var dynamicObject = new
+            {
+                text = ":soccer: Let's play! Thumb up if you're in! :soccer:",
+                blocks = new
+                {
+                    type = "section",
+                    text = new
+                    {
+                        type = "mrkdwn",
+                        text = "Danny To"
+                    }
+                }
+            };
+
+            var jsonstring = "{	\"blocks\": [        {			\"type\": \"section\",			\"text\": {				\"type\": \"mrkdwn\",				\"text\": \":soccer: Let's play!!! :soccer:\"            }        },		{			\"type\": \"section\",			\"fields\": [				{					\"type\": \"mrkdwn\",					\"text\": \"*When:*\nNow!\"				}			]		},		{			\"type\": \"actions\",			\"elements\": [				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Yes!\"					},					\"style\": \"primary\",					\"value\": \"click_me_123\"				},				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Can't...\"					},					\"style\": \"danger\",					\"value\": \"click_me_123\"				}			]		}	]}";
+            // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+            client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
+            return RedirectToAction("Index");
+        }
+
+
+        ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
+        // Posts a new winner on Slack (mw-no-makingfuss)
+        public void PostToSlackWin(string message)
+{
+    var dynamicObject = new
+    {
+        text = message
+    };
+    client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+}
+
+// Posts a submit to Slack
+public void LogToSlack(string message)
+{
+    var dynamicObject = new
+    {
+        text = message
+    };
+    client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+}
+
+// Calculate Win-loss ratio
+public double calculateWinLossRatio(int score, int gamesPlayed)
+{
+    if (gamesPlayed == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
+    }
+}
+
+// Check who the the leader is pre-submitting
+public async Task<int> checkLeaderPre()
+{
+    List<Contester> leaderPre = new List<Contester>();
+    using (var context = new EFCoreWebFussballContext())
+    {
+        var allContesters = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
+        leaderPre = allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(1).ToList<Contester>();
+    }
+    return leaderPre[0].ContesterId;
+}
+
+// Check who the the leader is post-submitting
+public async Task<Contester> checkLeaderPost()
+{
+    List<Contester> leaderPost = new List<Contester>();
+    using (var context = new EFCoreWebFussballContext())
+    {
+        var allContesters2 = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
+        leaderPost = allContesters2.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(1).ToList();
+    }
+    return leaderPost[0];
+}
     }
 }
