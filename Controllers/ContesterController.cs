@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using vscodecore.Models;
 using System.Net.Http;
 using Newtonsoft.Json;
-
+using Microsoft.AspNetCore.Http;
 
 namespace vscodecore.Controllers
 {
@@ -23,6 +23,22 @@ namespace vscodecore.Controllers
                 var allContesters = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
                 return View(allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed));
             }
+        }
+
+        [HttpPost]
+        public IActionResult PayloadFromSlack([FromBody] Payload payload)
+        {
+            string message = "";
+            if (payload.Actions.FirstOrDefault().Value == "click_me_go")
+            {
+                message = $"➕{payload.User.Name} er med! 😄";
+            }
+            else
+            {
+                message = $"➖{payload.User.Name} kan ikke nå! 😢";
+            }
+            LogToSlack(message);
+            return Ok();
         }
 
         [HttpGet] // Get the create-page view
@@ -95,23 +111,24 @@ namespace vscodecore.Controllers
         [HttpGet]
         public async Task<IActionResult> ProposeGame()
         {
-            var dynamicObject = new
-            {
-                text = ":soccer: Let's play! Thumb up if you're in! :soccer:",
-                blocks = new
-                {
-                    type = "section",
-                    text = new
-                    {
-                        type = "mrkdwn",
-                        text = "Danny To"
-                    }
-                }
-            };
+            // var dynamicObject = new
+            // {
+            //     text = ":soccer: Let's play! Thumb up if you're in! :soccer:",
+            //     blocks = new
+            //     {
+            //         type = "section",
+            //         text = new
+            //         {
+            //             type = "mrkdwn",
+            //             text = "Danny To"
+            //         }
+            //     }
+            // };
 
-            var jsonstring = "{	\"blocks\": [        {			\"type\": \"section\",			\"text\": {				\"type\": \"mrkdwn\",				\"text\": \":soccer: Let's play!!! :soccer:\"            }        },		{			\"type\": \"section\",			\"fields\": [				{					\"type\": \"mrkdwn\",					\"text\": \"*When:*\nNow!\"				}			]		},		{			\"type\": \"actions\",			\"elements\": [				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Yes!\"					},					\"style\": \"primary\",					\"value\": \"click_me_123\"				},				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Can't...\"					},					\"style\": \"danger\",					\"value\": \"click_me_123\"				}			]		}	]}";
+            // var jsonstring = "{	\"blocks\": [        {			\"type\": \"section\",			\"text\": {				\"type\": \"mrkdwn\",				\"text\": \":soccer: Let's play!!! :soccer:\"            }        },		{			\"type\": \"section\",			\"fields\": [				{					\"type\": \"mrkdwn\",					\"text\": \"*When:*\nNow!\"				}			]		},		{			\"type\": \"actions\",			\"elements\": [				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Yes!\"					},					\"style\": \"primary\",					\"value\": \"click_me_123\"				},				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Can't...\"					},					\"style\": \"danger\",					\"value\": \"click_me_123\"				}			]		}	]}";
+            var jsonstring = "{ 	\"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" } }, { \"type\": \"section\", \"fields\": [ { \"type\": \"mrkdwn\", \"text\": \"Er du med?!\" } ] }, { \"type\": \"actions\", \"elements\": [ { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }, \"style\": \"primary\", \"value\": \"click_me_go\" }, { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }, \"style\": \"danger\", \"value\": \"click_me_no\" } ] } 	] }";
             // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-            client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
+            var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
             return RedirectToAction("Index");
         }
 
@@ -119,59 +136,59 @@ namespace vscodecore.Controllers
         ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
         // Posts a new winner on Slack (mw-no-makingfuss)
         public void PostToSlackWin(string message)
-{
-    var dynamicObject = new
-    {
-        text = message
-    };
-    client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-}
+        {
+            var dynamicObject = new
+            {
+                text = message
+            };
+            client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+        }
 
-// Posts a submit to Slack
-public void LogToSlack(string message)
-{
-    var dynamicObject = new
-    {
-        text = message
-    };
-    client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-}
+        // Posts a submit to Slack
+        public void LogToSlack(string message)
+        {
+            var dynamicObject = new
+            {
+                text = message
+            };
+            client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+        }
 
-// Calculate Win-loss ratio
-public double calculateWinLossRatio(int score, int gamesPlayed)
-{
-    if (gamesPlayed == 0)
-    {
-        return 0;
-    }
-    else
-    {
-        return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
-    }
-}
+        // Calculate Win-loss ratio
+        public double calculateWinLossRatio(int score, int gamesPlayed)
+        {
+            if (gamesPlayed == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
+            }
+        }
 
-// Check who the the leader is pre-submitting
-public async Task<int> checkLeaderPre()
-{
-    List<Contester> leaderPre = new List<Contester>();
-    using (var context = new EFCoreWebFussballContext())
-    {
-        var allContesters = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
-        leaderPre = allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(1).ToList<Contester>();
-    }
-    return leaderPre[0].ContesterId;
-}
+        // Check who the the leader is pre-submitting
+        public async Task<int> checkLeaderPre()
+        {
+            List<Contester> leaderPre = new List<Contester>();
+            using (var context = new EFCoreWebFussballContext())
+            {
+                var allContesters = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
+                leaderPre = allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(1).ToList<Contester>();
+            }
+            return leaderPre[0].ContesterId;
+        }
 
-// Check who the the leader is post-submitting
-public async Task<Contester> checkLeaderPost()
-{
-    List<Contester> leaderPost = new List<Contester>();
-    using (var context = new EFCoreWebFussballContext())
-    {
-        var allContesters2 = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
-        leaderPost = allContesters2.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(1).ToList();
-    }
-    return leaderPost[0];
-}
+        // Check who the the leader is post-submitting
+        public async Task<Contester> checkLeaderPost()
+        {
+            List<Contester> leaderPost = new List<Contester>();
+            using (var context = new EFCoreWebFussballContext())
+            {
+                var allContesters2 = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
+                leaderPost = allContesters2.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(1).ToList();
+            }
+            return leaderPost[0];
+        }
     }
 }

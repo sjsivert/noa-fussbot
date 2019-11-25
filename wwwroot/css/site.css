@@ -174,5 +174,5 @@ body {
     70% { transform: translate(5px, 3px) rotate(-3deg); }
     80% { transform: translate(-2px, -3px) rotate(3deg); }
     90% { transform: translate(3px, 4px) rotate(0deg); }
-    100% { transform: translate(3px, -4px) rotate(-3deg); }
+    100% { transform: translate(0px, 0px) rotate(0deg); }
   }
