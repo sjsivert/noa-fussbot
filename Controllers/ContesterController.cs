@@ -25,6 +25,11 @@ namespace vscodecore.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult PayloadFromSlack()
+        {
+            return Ok("yolo");
+        }
         [HttpPost]
         public IActionResult PayloadFromSlack([FromBody] Payload payload)
         {
