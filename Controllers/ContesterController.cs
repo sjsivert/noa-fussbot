@@ -28,11 +28,15 @@ namespace vscodecore.Controllers
         [HttpGet]
         public IActionResult PayloadFromSlack()
         {
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% GET Payload %%%%%%%%%%%");
+
             return Ok("yolo");
         }
         [HttpPost]
         public IActionResult PayloadFromSlack([FromBody] Payload payload)
         {
+            System.Diagnostics.Trace.WriteLine("###%%%%%%%%% Payload initiated here %%%%%%%%%%%###");
+
             string message = "";
             if (payload.Actions.FirstOrDefault().Value == "click_me_go")
             {
@@ -42,11 +46,16 @@ namespace vscodecore.Controllers
             {
                 message = $"➖{payload.User.Name} kan ikke nå! 😢";
             }
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% Trying to log %%%%%%%%%%%");
+
             LogToSlack(message);
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% Returning after LogToSlack %%%%%%%%%%%");
+
             return Ok();
         }
         [HttpPost]
-        public IActionResult testPost(string value){
+        public IActionResult testPost(string value)
+        {
             return Ok($"hjelp, {value}");
         }
 
@@ -135,6 +144,8 @@ namespace vscodecore.Controllers
             // };
 
             // var jsonstring = "{	\"blocks\": [        {			\"type\": \"section\",			\"text\": {				\"type\": \"mrkdwn\",				\"text\": \":soccer: Let's play!!! :soccer:\"            }        },		{			\"type\": \"section\",			\"fields\": [				{					\"type\": \"mrkdwn\",					\"text\": \"*When:*\nNow!\"				}			]		},		{			\"type\": \"actions\",			\"elements\": [				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Yes!\"					},					\"style\": \"primary\",					\"value\": \"click_me_123\"				},				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Can't...\"					},					\"style\": \"danger\",					\"value\": \"click_me_123\"				}			]		}	]}";
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% Proposing game %%%%%%%%%%%");
+
             var jsonstring = "{ 	\"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" } }, { \"type\": \"section\", \"fields\": [ { \"type\": \"mrkdwn\", \"text\": \"Er du med?!\" } ] }, { \"type\": \"actions\", \"elements\": [ { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }, \"style\": \"primary\", \"value\": \"click_me_go\" }, { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }, \"style\": \"danger\", \"value\": \"click_me_no\" } ] } 	] }";
             // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
             var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
@@ -160,7 +171,9 @@ namespace vscodecore.Controllers
             {
                 text = message
             };
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% pre log %%%%%%%%%%%");
             client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% post log %%%%%%%%%%%");
         }
 
         // Calculate Win-loss ratio
