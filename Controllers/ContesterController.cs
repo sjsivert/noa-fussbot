@@ -45,6 +45,10 @@ namespace vscodecore.Controllers
             LogToSlack(message);
             return Ok();
         }
+        [HttpPost]
+        public IActionResult testPost(string value){
+            return Ok($"hjelp, {value}");
+        }
 
         [HttpGet] // Get the create-page view
         public IActionResult Create()
