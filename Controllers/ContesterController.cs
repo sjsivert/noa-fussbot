@@ -8,6 +8,7 @@ using vscodecore.Models;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics;
 
 namespace vscodecore.Controllers
 {
@@ -33,8 +34,12 @@ namespace vscodecore.Controllers
             return Ok("yolo");
         }
         [HttpPost]
-        public IActionResult PayloadFromSlack([FromBody] Payload payload)
+        public IActionResult PayloadFromSlack([FromForm] Payload payload)
         {
+            Debug.WriteLine("FUNKER DETTE?");
+            Debug.WriteLine(payload);
+            Debug.Print("Print: ",payload.ToString());
+
             System.Diagnostics.Trace.WriteLine("###%%%%%%%%% Payload initiated here %%%%%%%%%%%###");
 
             string message = "";
