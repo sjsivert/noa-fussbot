@@ -28,42 +28,22 @@ namespace vscodecore.Controllers
             }
         }
 
-        [HttpGet]
-        public IActionResult PayloadFromSlack()
-        {
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% GET Payload %%%%%%%%%%%------------------------------------------------------------------------------------------------");
-            Debug.WriteLine("FUNKER DETTE?--------------------------------------------------------------------------------------------------------------------------------");
-            Debug.Print("Print--------------------------------------------------------------------------------------------------------------------------------");
-
-            return Ok("yolo--------------------------------");
-        }
         [HttpPost]
         public async Task<IActionResult> PayloadFromSlack([FromForm] string payload)
         {
             var decodedPayload = HttpUtility.UrlDecode(payload);
-            // JObject jo = JObject.Parse(decodedPayload);
             Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
-            // Payload oMycustomclassname2 = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(payload);
             string message = "";
             if (payloadObject.Actions.FirstOrDefault().Value == "click_me_go")
             {
-                message = $"➕{payloadObject.User.Name} er med! 😄";
+                message = $"➕ {payloadObject.User.Username} er med!";
             }
             else
             {
-                message = $"➖{payloadObject.User.Name} kan ikke nå! 😢";
+                message = $"➖ {payloadObject.User.Username} kan ikke nå!";
             }
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% Trying to log %%%%%%%%%%%");
-
-            await LogToSlack2(message);
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% Returning after LogToSlack %%%%%%%%%%%");
-
+            await LogToSlack(message);
             return Ok();
-        }
-        [HttpPost]
-        public IActionResult testPost(string value)
-        {
-            return Ok($"hjelp, {value}");
         }
 
         [HttpGet] // Get the create-page view
@@ -136,23 +116,6 @@ namespace vscodecore.Controllers
         [HttpGet]
         public async Task<IActionResult> ProposeGame()
         {
-            // var dynamicObject = new
-            // {
-            //     text = ":soccer: Let's play! Thumb up if you're in! :soccer:",
-            //     blocks = new
-            //     {
-            //         type = "section",
-            //         text = new
-            //         {
-            //             type = "mrkdwn",
-            //             text = "Danny To"
-            //         }
-            //     }
-            // };
-
-            // var jsonstring = "{	\"blocks\": [        {			\"type\": \"section\",			\"text\": {				\"type\": \"mrkdwn\",				\"text\": \":soccer: Let's play!!! :soccer:\"            }        },		{			\"type\": \"section\",			\"fields\": [				{					\"type\": \"mrkdwn\",					\"text\": \"*When:*\nNow!\"				}			]		},		{			\"type\": \"actions\",			\"elements\": [				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Yes!\"					},					\"style\": \"primary\",					\"value\": \"click_me_123\"				},				{					\"type\": \"button\",					\"text\": {						\"type\": \"plain_text\",						\"emoji\": true,						\"text\": \"Can't...\"					},					\"style\": \"danger\",					\"value\": \"click_me_123\"				}			]		}	]}";
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% Proposing game %%%%%%%%%%%");
-
             var jsonstring = "{ 	\"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" } }, { \"type\": \"section\", \"fields\": [ { \"type\": \"mrkdwn\", \"text\": \"Er du med?!\" } ] }, { \"type\": \"actions\", \"elements\": [ { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }, \"style\": \"primary\", \"value\": \"click_me_go\" }, { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }, \"style\": \"danger\", \"value\": \"click_me_no\" } ] } 	] }";
             // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
             var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
@@ -172,25 +135,13 @@ namespace vscodecore.Controllers
         }
 
         // Posts a submit to Slack
-        public void LogToSlack(string message)
+        public async Task<string> LogToSlack(string message)
         {
             var dynamicObject = new
             {
                 text = message
             };
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% pre log %%%%%%%%%%%");
-            client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% post log %%%%%%%%%%%");
-        }
-        public async Task<string> LogToSlack2(string message)
-        {
-            var dynamicObject = new
-            {
-                text = message
-            };
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% pre log %%%%%%%%%%%");
             await client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% post log %%%%%%%%%%%");
             return "ok";
         }
 
