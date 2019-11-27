@@ -9,6 +9,8 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
+using System.Web;
+using Newtonsoft.Json.Linq;
 
 namespace vscodecore.Controllers
 {
@@ -29,31 +31,31 @@ namespace vscodecore.Controllers
         [HttpGet]
         public IActionResult PayloadFromSlack()
         {
-            System.Diagnostics.Trace.WriteLine("%%%%%%%%% GET Payload %%%%%%%%%%%");
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% GET Payload %%%%%%%%%%%------------------------------------------------------------------------------------------------");
+            Debug.WriteLine("FUNKER DETTE?--------------------------------------------------------------------------------------------------------------------------------");
+            Debug.Print("Print--------------------------------------------------------------------------------------------------------------------------------");
 
-            return Ok("yolo");
+            return Ok("yolo--------------------------------");
         }
         [HttpPost]
-        public IActionResult PayloadFromSlack([FromForm] Payload payload)
+        public async Task<IActionResult> PayloadFromSlack([FromForm] string payload)
         {
-            Debug.WriteLine("FUNKER DETTE?");
-            Debug.WriteLine(payload);
-            Debug.Print("Print: ",payload.ToString());
-
-            System.Diagnostics.Trace.WriteLine("###%%%%%%%%% Payload initiated here %%%%%%%%%%%###");
-
+            var decodedPayload = HttpUtility.UrlDecode(payload);
+            // JObject jo = JObject.Parse(decodedPayload);
+            Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+            // Payload oMycustomclassname2 = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(payload);
             string message = "";
-            if (payload.Actions.FirstOrDefault().Value == "click_me_go")
+            if (payloadObject.Actions.FirstOrDefault().Value == "click_me_go")
             {
-                message = $"➕{payload.User.Name} er med! 😄";
+                message = $"➕{payloadObject.User.Name} er med! 😄";
             }
             else
             {
-                message = $"➖{payload.User.Name} kan ikke nå! 😢";
+                message = $"➖{payloadObject.User.Name} kan ikke nå! 😢";
             }
             System.Diagnostics.Trace.WriteLine("%%%%%%%%% Trying to log %%%%%%%%%%%");
 
-            LogToSlack(message);
+            await LogToSlack2(message);
             System.Diagnostics.Trace.WriteLine("%%%%%%%%% Returning after LogToSlack %%%%%%%%%%%");
 
             return Ok();
@@ -179,6 +181,17 @@ namespace vscodecore.Controllers
             System.Diagnostics.Trace.WriteLine("%%%%%%%%% pre log %%%%%%%%%%%");
             client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
             System.Diagnostics.Trace.WriteLine("%%%%%%%%% post log %%%%%%%%%%%");
+        }
+        public async Task<string> LogToSlack2(string message)
+        {
+            var dynamicObject = new
+            {
+                text = message
+            };
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% pre log %%%%%%%%%%%");
+            await client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+            System.Diagnostics.Trace.WriteLine("%%%%%%%%% post log %%%%%%%%%%%");
+            return "ok";
         }
 
         // Calculate Win-loss ratio
