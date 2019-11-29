@@ -1,4 +1,4 @@
-@model IEnumerable<Contester>
+﻿@model IEnumerable<Contester>
 @{
     ViewBag.Title = "MakingFuss";
 }
@@ -19,7 +19,8 @@
     <div class="col">
         <h1 class="display-4 ">Leaderboard</h1>
         <p class="lead ">Making Waves Fussball Champions</p>
-        <p>@Html.ActionLink("Let's play!", "ProposeGame")</p>
+        @Html.ActionLink("Let's play!", "ProposeGame","Contester", null,null,null,null, new {@class = "glow-on-hover"})
+
     </div>
     <div class="col">
       <div style="position:relative;">
