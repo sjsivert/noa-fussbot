@@ -33,17 +33,29 @@ namespace vscodecore.Controllers
         {
             var decodedPayload = HttpUtility.UrlDecode(payload);
             Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+            var capitalizedName = UppercaseName(payloadObject.User.Name);
             string message = "";
             if (payloadObject.Actions.FirstOrDefault().Value == "click_me_go")
             {
-                message = $"➕ {payloadObject.User.Username} er med!";
+                message = $"➕ {capitalizedName} er med!";
             }
             else
             {
-                message = $"➖ {payloadObject.User.Username} kan ikke nå!";
+                message = $"➖ {capitalizedName} kan ikke nå!";
             }
             await LogToSlack(message);
             return Ok();
+        }
+        // [HttpPost]
+        // public string CapitalThis([FromBody]UserName whatever)
+        // {
+        //     var capName = UppercaseName(whatever.Name);
+        //     return capName;
+        // }
+        public string UppercaseName(string userName)
+        {
+            var nameCapitalized = userName[0].ToString().ToUpper() + userName.Substring(1);
+            return nameCapitalized;
         }
 
         [HttpGet] // Get the create-page view
