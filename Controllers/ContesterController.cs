@@ -46,12 +46,52 @@ namespace vscodecore.Controllers
             await LogToSlack(message);
             return Ok();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SlashProposeGame([FromForm] string payload)
+        {
+            var decodedPayload = HttpUtility.UrlDecode(payload);
+            Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+            var user = payloadObject.User.Name;
+            await ProposeGame(user);
+            return Ok();
+        }
         // [HttpPost]
-        // public string CapitalThis([FromBody]UserName whatever)
+        // public async Task<IActionResult> SlashRegisterWin([FromForm] string payload)
         // {
-        //     var capName = UppercaseName(whatever.Name);
-        //     return capName;
+        //     var decodedPayload = HttpUtility.UrlDecode(payload);
+        //     Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+        //     // TODO: register win to DB
+
+        //     // find the user how?
+
+        //     // var user = payloadObject.User.Name;
+        //     // await ProposeGame(user);
+        //     return Ok();
         // }
+        //   [HttpPost]
+        // public async Task<IActionResult> SlashRegisterLoss([FromForm] string payload)
+        // {
+        //     // var decodedPayload = HttpUtility.UrlDecode(payload);
+        //     // Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+        //     // var user = payloadObject.User.Name;
+        //     // await ProposeGame(user);
+        //     return Ok();
+        // }
+
+
+        
+        //   [HttpPost]
+        // public async Task<IActionResult>  ([FromForm] string payload)
+        // {
+        //     // var decodedPayload = HttpUtility.UrlDecode(payload);
+        //     // Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+        //     // var user = payloadObject.User.Name;
+        //     // await ProposeGame(user);
+        //     return Ok();
+        // }
+        
+
         public string UppercaseName(string userName)
         {
             var nameCapitalized = userName[0].ToString().ToUpper() + userName.Substring(1);
@@ -119,16 +159,21 @@ namespace vscodecore.Controllers
             var leaderPost = await checkLeaderPost();
             if (leaderPre != leaderPost.ContesterId)
             {
-                string winnerMessage = $":crown: :crown: :crown: {leaderPost.ToString()} is now the new leader!!! :crown: :crown: :crown:";
+                string winnerMessage = $":crown: :crown: :crown: {leaderPost.ToString()} is now the new leader @here :crown: :crown: :crown:";
                 LogToSlack(winnerMessage);
             }
             return RedirectToAction("Index");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ProposeGame()
+        public async Task<IActionResult> ProposeGame(string? user = "")
         {
-            var jsonstring = "{ 	\"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" } }, { \"type\": \"section\", \"fields\": [ { \"type\": \"mrkdwn\", \"text\": \"Er du med? @here!\" } ] }, { \"type\": \"actions\", \"elements\": [ { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }, \"style\": \"primary\", \"value\": \"click_me_go\" }, { \"type\": \"button\", \"text\": { 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }, \"style\": \"danger\", \"value\": \"click_me_no\" } ] } 	] }";
+            var proposer = "";
+            if (user != "")
+            {
+                proposer = $"{user} er klar for spill!";
+            }
+            var jsonstring = $"{{\"blocks\": [ {{ \"type\": \"section\", \"text\": {{ \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" }} }}, {{ \"type\": \"section\", \"fields\": [ {{ \"type\": \"mrkdwn\", \"text\": \"{proposer} Er du med? @here!\" }} ] }}, {{ \"type\": \"actions\", \"elements\": [ {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }}, \"style\": \"primary\", \"value\": \"click_me_go\" }}, {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }}, \"style\": \"danger\", \"value\": \"click_me_no\" }} ] }} 	] }}";
             // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
             var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
             return RedirectToAction("Index");
