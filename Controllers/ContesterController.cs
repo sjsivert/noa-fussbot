@@ -48,11 +48,11 @@ namespace vscodecore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SlashProposeGame([FromForm] string payload)
+        public async Task<IActionResult> SlashProposeGame(SlashPayload payload)
         {
-            var decodedPayload = HttpUtility.UrlDecode(payload);
-            Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
-            var user = payloadObject.User.Name;
+            // var decodedPayload = HttpUtility.UrlDecode(payload);
+            // Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
+            var user = UppercaseName(payload.user_name);
             await ProposeGame(user);
             return Ok();
         }
@@ -80,7 +80,7 @@ namespace vscodecore.Controllers
         // }
 
 
-        
+
         //   [HttpPost]
         // public async Task<IActionResult>  ([FromForm] string payload)
         // {
@@ -173,7 +173,7 @@ namespace vscodecore.Controllers
             {
                 proposer = $"{user} er klar for spill!";
             }
-            var jsonstring = $"{{\"blocks\": [ {{ \"type\": \"section\", \"text\": {{ \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" }} }}, {{ \"type\": \"section\", \"fields\": [ {{ \"type\": \"mrkdwn\", \"text\": \"{proposer} Er du med? @here!\" }} ] }}, {{ \"type\": \"actions\", \"elements\": [ {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }}, \"style\": \"primary\", \"value\": \"click_me_go\" }}, {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }}, \"style\": \"danger\", \"value\": \"click_me_no\" }} ] }} 	] }}";
+            var jsonstring = $"{{\"blocks\": [ {{ \"type\": \"section\", \"text\": {{ \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" }} }}, {{ \"type\": \"section\", \"fields\": [ {{ \"type\": \"mrkdwn\", \"text\": \"{proposer} Er du med? @here \" }} ] }}, {{ \"type\": \"actions\", \"elements\": [ {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }}, \"style\": \"primary\", \"value\": \"click_me_go\" }}, {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }}, \"style\": \"danger\", \"value\": \"click_me_no\" }} ] }} 	] }}";
             // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
             var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
             return RedirectToAction("Index");
