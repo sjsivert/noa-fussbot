@@ -25,11 +25,11 @@ namespace vscodecore.Models
         public string user_id { get; set; }
         public string user_name { get; set; }
         public string command { get; set; }
-        public long text { get; set; }
+        public string text { get; set; }
         public Uri response_url { get; set; }
         public string trigger_id { get; set; }
     }
-
+// Probably don't need anything below ___
     public partial class SlashPayload
     {
         public static SlashPayload FromJson(string json) => JsonConvert.DeserializeObject<SlashPayload>(json, vscodecore.Models.Converter.Settings);

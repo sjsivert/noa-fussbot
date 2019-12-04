@@ -1037,6 +1037,19 @@
           }
         }
       },
+      "Slack.Webhooks/1.1.0": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "Newtonsoft.Json": "10.0.3"
+        },
+        "compile": {
+          "lib/netstandard1.3/Slack.Webhooks.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.3/Slack.Webhooks.dll": {}
+        }
+      },
       "System.Collections/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -4185,6 +4198,19 @@
         "runtimes/win-x86/native/sni.dll",
         "useSharedDesignerContext.txt",
         "version.txt"
+      ]
+    },
+    "Slack.Webhooks/1.1.0": {
+      "sha512": "L68+zbCKNUkkvh9/jJqmF9/QRfVCTCGCpB03huyJca+eIiHliJnuUYkDRUwbS+QEn8DKwfqvcOcTFKqB5GAqSA==",
+      "type": "package",
+      "path": "slack.webhooks/1.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/Slack.Webhooks.dll",
+        "lib/netstandard1.3/Slack.Webhooks.dll",
+        "slack.webhooks.1.1.0.nupkg.sha512",
+        "slack.webhooks.nuspec"
       ]
     },
     "System.Collections/4.3.0": {
@@ -8118,7 +8144,8 @@
       "Microsoft.EntityFrameworkCore.Tools >= 3.0.0",
       "Microsoft.EntityFrameworkCore.Tools.DotNet >= 2.0.3",
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 3.0.0",
-      "RestSharp.Newtonsoft.Json.NetCore >= 1.0.0"
+      "RestSharp.Newtonsoft.Json.NetCore >= 1.0.0",
+      "Slack.Webhooks >= 1.1.0"
     ]
   },
   "packageFolders": {
@@ -8189,6 +8216,10 @@
           "RestSharp.Newtonsoft.Json.NetCore": {
             "target": "Package",
             "version": "[1.0.0, )"
+          },
+          "Slack.Webhooks": {
+            "target": "Package",
+            "version": "[1.1.0, )"
           }
         },
         "imports": [

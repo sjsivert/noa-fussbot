@@ -242,3 +242,8 @@ body {
     50% { background-position: 400% 0; }
     100% { background-position: 0 0; }
 }
+
+/* remove spacing td */
+table.removeTop td { 
+  border-top:0px;
+ }

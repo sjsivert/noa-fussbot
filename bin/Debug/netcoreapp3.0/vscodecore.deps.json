@@ -30,6 +30,7 @@
           "Microsoft.EntityFrameworkCore.Tools.DotNet": "2.0.3",
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": "3.0.0",
           "RestSharp.Newtonsoft.Json.NetCore": "1.0.0",
+          "Slack.Webhooks": "1.1.0",
           "Microsoft.AspNetCore.Antiforgery": "3.0.0.0",
           "Microsoft.AspNetCore.Authentication.Abstractions": "3.0.0.0",
           "Microsoft.AspNetCore.Authentication.Cookies": "3.0.0.0",
@@ -1063,6 +1064,21 @@
             "assetType": "native",
             "fileVersion": "4.6.25512.1"
           }
+        }
+      },
+      "Slack.Webhooks/1.1.0": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.1",
+          "Newtonsoft.Json": "11.0.2"
+        },
+        "runtime": {
+          "lib/netstandard1.3/Slack.Webhooks.dll": {
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard1.3/Slack.Webhooks.dll": {}
         }
       },
       "System.Collections/4.3.0": {
@@ -4060,6 +4076,13 @@
       "sha512": "sha512-YhEdSQUsTx+C8m8Bw7ar5/VesXvCFMItyZF7G1AUY+OM0VPZUOeAVpJ4Wl6fydBGUYZxojTDR3I6Bj/+BPkJNA==",
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
+    },
+    "Slack.Webhooks/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-L68+zbCKNUkkvh9/jJqmF9/QRfVCTCGCpB03huyJca+eIiHliJnuUYkDRUwbS+QEn8DKwfqvcOcTFKqB5GAqSA==",
+      "path": "slack.webhooks/1.1.0",
+      "hashPath": "slack.webhooks.1.1.0.nupkg.sha512"
     },
     "System.Collections/4.3.0": {
       "type": "package",
