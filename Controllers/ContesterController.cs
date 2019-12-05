@@ -116,10 +116,13 @@ namespace vscodecore.Controllers
             {
                 contester.GamesPlayed = 0;
                 contester.Score = 0;
+                contester.Ratio = calculateWinLossRatio(contester.Score, contester.GamesPlayed);
                 contester.IsActive = true;
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 context.Add(contester);
                 await context.SaveChangesAsync();
+                string welcomeMessage = $":crossed_swords: A new contester has signed up! :crossed_swords: Welcome {contester.ToString()}";
+                LogToSlack(welcomeMessage);
             }
             return RedirectToAction("Index");
         }
@@ -134,6 +137,7 @@ namespace vscodecore.Controllers
                 contester = await context.Contesters.FindAsync(contesterId);
                 contester.Score += 1;
                 contester.GamesPlayed += 1;
+                contester.Ratio = calculateWinLossRatio(contester.Score, contester.GamesPlayed);
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 await context.SaveChangesAsync();
                 string message = $"{contester.ToString()} submitted a win.";
@@ -157,6 +161,7 @@ namespace vscodecore.Controllers
             {
                 contester = await context.Contesters.FindAsync(contesterId);
                 contester.GamesPlayed += 1;
+                contester.Ratio = calculateWinLossRatio(contester.Score, contester.GamesPlayed);
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 await context.SaveChangesAsync();
                 string message = $"{contester.ToString()} submitted a loss.";
@@ -170,6 +175,7 @@ namespace vscodecore.Controllers
             }
             return RedirectToAction("Index");
         }
+
 
         [HttpGet]
         public async Task<IActionResult> ProposeGame(string? user = "")
@@ -186,17 +192,9 @@ namespace vscodecore.Controllers
         }
 
 
-        ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
-        // Posts a new winner on Slack (mw-no-makingfuss)
-        public void PostToSlackWin(string message)
-        {
-            var dynamicObject = new
-            {
-                text = message
-            };
-            client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-        }
 
+
+        ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
         // Posts a submit to Slack
         public async Task<string> LogToSlack(string message)
         {
@@ -214,7 +212,17 @@ namespace vscodecore.Controllers
             }
             else
             {
-                return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
+                if (gamesPlayed < 10)
+                {
+                    double starterGames = 10.0;
+                    double starterWin = 5.0;
+                    double normalizedRatio = (Convert.ToDouble(score) + starterWin) / (Convert.ToDouble(gamesPlayed) + starterGames);
+                    return normalizedRatio;
+                }
+                else
+                {
+                    return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
+                }
             }
         }
 
@@ -256,10 +264,37 @@ namespace vscodecore.Controllers
             var ratio3 = (Convert.ToDecimal(scopeTop5.ElementAt(2).Score) / Convert.ToDecimal(scopeTop5.ElementAt(2).GamesPlayed));
             var ratio4 = (Convert.ToDecimal(scopeTop5.ElementAt(3).Score) / Convert.ToDecimal(scopeTop5.ElementAt(3).GamesPlayed));
             var ratio5 = (Convert.ToDecimal(scopeTop5.ElementAt(4).Score) / Convert.ToDecimal(scopeTop5.ElementAt(4).GamesPlayed));
-            var jsonstring = $"{{\"blocks\":[{{\"type\":\"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Scoreboard*\"}}}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(0).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{ratio1.ToString()}\"}},{{\"type\": \"mrkdwn\",\"text\": \"*Wins: *\n{scopeTop5.ElementAt(0).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(0).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(1).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{ratio2.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(1).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(1).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(2).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{ratio3.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(2).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(2).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(3).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{ratio4.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(3).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(3).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(4).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{ratio5.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(4).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(4).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}}]}}";
+            var jsonstring = $"{{\"blocks\":[{{\"type\":\"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Scoreboard*\"}}}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(0).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(0).Ratio.ToString()}\"}},{{\"type\": \"mrkdwn\",\"text\": \"*Wins: *\n{scopeTop5.ElementAt(0).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(0).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(1).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(1).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(1).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(1).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(2).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(2).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(2).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(2).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(3).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(3).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(3).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(3).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(4).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(4).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(4).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(4).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}}]}}";
             using var client = new HttpClient();
             var result = await client.PostAsync($"https://logthistoslack.azurewebsites.net/api/ShowScoreboard?code=cI4VLMJqwjryhUBXb2otf6wovsRV1W/UxaGviryixhRrvLqc8/44TA==&scoreboard={jsonstring}", null);
             return "ok";
         }
+
+
+        [HttpGet] // Used to update W/L ratios 
+        public async Task<string> updateRatio()
+        {
+            using (var context = new EFCoreWebFussballContext())
+            {
+                var allContesters = await context.Contesters.Where(z => z.IsActive == true).AsNoTracking().ToListAsync();
+                foreach (var contester in allContesters)
+                {
+                    var contesterr = new Contester();
+                    contesterr = await context.Contesters.FindAsync(contester.ContesterId);
+                    contesterr.Ratio = calculateWinLossRatio(contester.Score, contester.GamesPlayed);
+                    await context.SaveChangesAsync();
+                }
+            }
+            return "Win/loss rations updated";
+        }
+        // Posts a new winner on Slack (mw-no-makingfuss)
+        // public void PostToSlackWin(string message)
+        // {
+        //     var dynamicObject = new
+        //     {
+        //         text = message
+        //     };
+        //     client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
+        // }
     }
 }

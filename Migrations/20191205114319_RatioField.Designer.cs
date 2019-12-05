@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using vscodecore.Models;
 
 namespace vscodecore.Migrations
 {
     [DbContext(typeof(EFCoreWebFussballContext))]
-    partial class EFCoreWebFussballContextModelSnapshot : ModelSnapshot
+    [Migration("20191205114319_RatioField")]
+    partial class RatioField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -15,6 +15,7 @@ namespace vscodecore.Models
         public string LastName { get; set; }
         public int Score { get; set; }
         public int GamesPlayed { get; set; }
+        public double Ratio { get; set; }
         public string LastUpdated { get; set; }
         // public int TournamentWon { get; set; }
         public bool IsActive { get; set; }
