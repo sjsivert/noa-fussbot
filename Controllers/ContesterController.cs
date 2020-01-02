@@ -62,41 +62,6 @@ namespace vscodecore.Controllers
             }
             return Ok();
         }
-        // [HttpPost]
-        // public async Task<IActionResult> SlashRegisterWin([FromForm] string payload)
-        // {
-        //     var decodedPayload = HttpUtility.UrlDecode(payload);
-        //     Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
-        //     // TODO: register win to DB
-
-        //     // find the user how?
-
-        //     // var user = payloadObject.User.Name;
-        //     // await ProposeGame(user);
-        //     return Ok();
-        // }
-        //   [HttpPost]
-        // public async Task<IActionResult> SlashRegisterLoss([FromForm] string payload)
-        // {
-        //     // var decodedPayload = HttpUtility.UrlDecode(payload);
-        //     // Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
-        //     // var user = payloadObject.User.Name;
-        //     // await ProposeGame(user);
-        //     return Ok();
-        // }
-
-
-
-        //   [HttpPost]
-        // public async Task<IActionResult>  ([FromForm] string payload)
-        // {
-        //     // var decodedPayload = HttpUtility.UrlDecode(payload);
-        //     // Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
-        //     // var user = payloadObject.User.Name;
-        //     // await ProposeGame(user);
-        //     return Ok();
-        // }
-
 
         public string UppercaseName(string userName)
         {
@@ -259,11 +224,7 @@ namespace vscodecore.Controllers
                 var res = allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(5);
                 scopeTop5 = res;
             }
-            var ratio1 = (Convert.ToDecimal(scopeTop5.ElementAt(0).Score) / Convert.ToDecimal(scopeTop5.ElementAt(0).GamesPlayed));
-            var ratio2 = (Convert.ToDecimal(scopeTop5.ElementAt(1).Score) / Convert.ToDecimal(scopeTop5.ElementAt(1).GamesPlayed));
-            var ratio3 = (Convert.ToDecimal(scopeTop5.ElementAt(2).Score) / Convert.ToDecimal(scopeTop5.ElementAt(2).GamesPlayed));
-            var ratio4 = (Convert.ToDecimal(scopeTop5.ElementAt(3).Score) / Convert.ToDecimal(scopeTop5.ElementAt(3).GamesPlayed));
-            var ratio5 = (Convert.ToDecimal(scopeTop5.ElementAt(4).Score) / Convert.ToDecimal(scopeTop5.ElementAt(4).GamesPlayed));
+            
             var jsonstring = $"{{\"blocks\":[{{\"type\":\"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Scoreboard*\"}}}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(0).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(0).Ratio.ToString()}\"}},{{\"type\": \"mrkdwn\",\"text\": \"*Wins: *\n{scopeTop5.ElementAt(0).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(0).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(1).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(1).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(1).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(1).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(2).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(2).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(2).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(2).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(3).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(3).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(3).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(3).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(4).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(4).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(4).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(4).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}}]}}";
             using var client = new HttpClient();
             var result = await client.PostAsync($"https://logthistoslack.azurewebsites.net/api/ShowScoreboard?code=cI4VLMJqwjryhUBXb2otf6wovsRV1W/UxaGviryixhRrvLqc8/44TA==&scoreboard={jsonstring}", null);
