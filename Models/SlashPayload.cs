@@ -3,12 +3,10 @@
 namespace vscodecore.Models
 {
     using System;
-    using System.Collections.Generic;
-
     using System.Globalization;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
-
+// Class for Slack slashcommand payload
     public partial class SlashPayload
     {
         public SlashPayload()
@@ -17,9 +15,7 @@ namespace vscodecore.Models
         }
         public string token { get; set; }
         public string team_id { get; set; }
-        // public string TeamDomain { get; set; }
         public string enterprise_id { get; set; }
-        // public string EnterpriseName { get; set; }
         public string channel_id { get; set; }
         public string channel_name { get; set; }
         public string user_id { get; set; }

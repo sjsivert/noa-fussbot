@@ -17,9 +17,8 @@ namespace vscodecore.Models
         public int GamesPlayed { get; set; }
         public double Ratio { get; set; }
         public string LastUpdated { get; set; }
-        // public int TournamentWon { get; set; }
         public bool IsActive { get; set; }
-        // public Tournament Tournament { get; set; }
+        
 
         public override string ToString()
         {

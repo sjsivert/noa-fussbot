@@ -19,7 +19,7 @@ namespace vscodecore.Controllers
     {
         private static readonly HttpClient client = new HttpClient();
 
-        [HttpGet] // Gets the frontpage
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             using (var context = new EFCoreWebFussballContext())
@@ -36,7 +36,7 @@ namespace vscodecore.Controllers
             Payload payloadObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Payload>(decodedPayload);
             var capitalizedName = UppercaseName(payloadObject.User.Name);
             string message = "";
-            if (payloadObject.Actions.FirstOrDefault().Value == "click_me_go")
+            if (payloadObject.Actions.FirstOrDefault().Value == "click_me_go") // Message according to which button the user pressed in Slack
             {
                 message = $"➕ {capitalizedName} er med!";
             }
@@ -48,10 +48,10 @@ namespace vscodecore.Controllers
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPost] // Handles Slack-interaction. "/fuss" and "/fuss score"
         public async Task<IActionResult> SlashProposeGame(SlashPayload payload)
         {
-            if (payload.text == "score")
+            if (payload.text == "score") // TODO: Switch statement instead
             {
                 await postLeaderboard();
             }
@@ -63,17 +63,12 @@ namespace vscodecore.Controllers
             return Ok();
         }
 
-        public string UppercaseName(string userName)
-        {
-            var nameCapitalized = userName[0].ToString().ToUpper() + userName.Substring(1);
-            return nameCapitalized;
-        }
-
-        [HttpGet] // Get the create-page view
+        [HttpGet] // Get the create-page view (new user/contester)
         public IActionResult Create()
         {
             return View();
         }
+
         [HttpPost] // Create a new contester
         public async Task<IActionResult> Create([Bind("FirstName, LastName")] Contester contester)
         {
@@ -92,7 +87,7 @@ namespace vscodecore.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpGet] // Submit a win // Fordi ActionLink er en GET.. 
+        [HttpGet] // Submit a win // Fordi ActionLink er en GET.. (?)
         public async Task<IActionResult> AddWin(int contesterId)
         {
             var leaderPre = await checkLeaderPre();
@@ -151,7 +146,6 @@ namespace vscodecore.Controllers
                 proposer = $"{user} er klar for spill!";
             }
             var jsonstring = $"{{\"blocks\": [ {{ \"type\": \"section\", \"text\": {{ \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" }} }}, {{ \"type\": \"section\", \"fields\": [ {{ \"type\": \"mrkdwn\", \"text\": \"{proposer} Er du med? @here \" }} ] }}, {{ \"type\": \"actions\", \"elements\": [ {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }}, \"style\": \"primary\", \"value\": \"click_me_go\" }}, {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }}, \"style\": \"danger\", \"value\": \"click_me_no\" }} ] }} 	] }}";
-            // client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
             var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
             return RedirectToAction("Index");
         }
@@ -160,7 +154,13 @@ namespace vscodecore.Controllers
 
 
         ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
-        // Posts a submit to Slack
+
+        public string UppercaseName(string userName)
+        {
+            var nameCapitalized = userName[0].ToString().ToUpper() + userName.Substring(1);
+            return nameCapitalized;
+        }
+        // Posts a submit to Slack (via a Function App)
         public async Task<string> LogToSlack(string message)
         {
             using var client = new HttpClient();
@@ -171,23 +171,21 @@ namespace vscodecore.Controllers
         // Calculate Win-loss ratio
         public double calculateWinLossRatio(int score, int gamesPlayed)
         {
-            if (gamesPlayed == 0)
+            if (gamesPlayed == 0) // Avoid "can't divide by 0" error
             {
                 return 0;
             }
+
+            if (gamesPlayed < 10) // "Normalization" of score for players who rarely play/are new - starts with a 0.5 in w/l ratio
+            {
+                double starterGames = 10.0;
+                double starterWin = 5.0;
+                double normalizedRatio = (Convert.ToDouble(score) + starterWin) / (Convert.ToDouble(gamesPlayed) + starterGames);
+                return normalizedRatio;
+            }
             else
             {
-                if (gamesPlayed < 10)
-                {
-                    double starterGames = 10.0;
-                    double starterWin = 5.0;
-                    double normalizedRatio = (Convert.ToDouble(score) + starterWin) / (Convert.ToDouble(gamesPlayed) + starterGames);
-                    return normalizedRatio;
-                }
-                else
-                {
-                    return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
-                }
+                return Convert.ToDouble(score) / Convert.ToDouble(gamesPlayed);
             }
         }
 
@@ -224,7 +222,7 @@ namespace vscodecore.Controllers
                 var res = allContesters.OrderByDescending(x => calculateWinLossRatio(x.Score, x.GamesPlayed)).ThenByDescending(y => y.GamesPlayed).Take(5);
                 scopeTop5 = res;
             }
-            
+
             var jsonstring = $"{{\"blocks\":[{{\"type\":\"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Scoreboard*\"}}}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(0).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(0).Ratio.ToString()}\"}},{{\"type\": \"mrkdwn\",\"text\": \"*Wins: *\n{scopeTop5.ElementAt(0).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(0).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(1).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(1).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(1).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(1).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(2).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(2).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(2).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(2).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(3).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(3).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(3).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(3).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(4).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(4).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(4).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(4).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}}]}}";
             using var client = new HttpClient();
             var result = await client.PostAsync($"https://logthistoslack.azurewebsites.net/api/ShowScoreboard?code=cI4VLMJqwjryhUBXb2otf6wovsRV1W/UxaGviryixhRrvLqc8/44TA==&scoreboard={jsonstring}", null);
@@ -232,7 +230,7 @@ namespace vscodecore.Controllers
         }
 
 
-        [HttpGet] // Used to update W/L ratios 
+        [HttpGet] // Used to update W/L ratios manually through Postman
         public async Task<string> updateRatio()
         {
             using (var context = new EFCoreWebFussballContext())
@@ -248,14 +246,5 @@ namespace vscodecore.Controllers
             }
             return "Win/loss rations updated";
         }
-        // Posts a new winner on Slack (mw-no-makingfuss)
-        // public void PostToSlackWin(string message)
-        // {
-        //     var dynamicObject = new
-        //     {
-        //         text = message
-        //     };
-        //     client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(JsonConvert.SerializeObject(dynamicObject)));
-        // }
     }
 }

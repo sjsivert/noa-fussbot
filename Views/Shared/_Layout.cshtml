@@ -23,12 +23,6 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
-                        <!-- <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li> -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Contester" asp-action="Index">Leaderboard</a>
                         </li>
@@ -49,15 +43,18 @@
             &copy; 2019 - MW
         </div>
     </footer>
-    
+
+        @* URL "animation" *@
     <script>
-        var f = ['🕺', '⚽', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '🚶'];
+        var f = ['🕺', '🌑', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '🚶'];
+        var moon = ['🌒','🌓','🌔','🌕','🌖','🌗','🌘','🌑'];
           async function sleep (time) {
             return new Promise((resolve) => setTimeout(resolve, time));
         }
         async function loop() {
             var counter = 1;
             var countForward = true;
+            var moonCounter = 0;
             while(true){
                 f[counter%f.length] = '_';
                 if(countForward){
@@ -67,23 +64,27 @@
                 }
                 if(counter == f.length){ // if at end
                     countForward = false;
-                    f[f.length-1] = '🏃‍';
-                    f[f.length-2] = '⚽';
+                    f[f.length-1] = '🏃';
+                    f[f.length-2] = moon[moonCounter];
                     location.hash = f.join('');
                     await sleep(300);
                 } else if (counter == 1){ // if back at start
                     countForward = true;
                     f[0] = '💃';
-                    f[counter%f.length] = '⚽';
+                    f[counter%f.length] = moon[moonCounter];
                     location.hash = f.join('');
                     await sleep(300);
                 } else if(counter > 1 && counter < f.length-2){ // inbetween
                     f[0] = '🕺';
                     f[f.length-1] = '🚶';
-                    f[counter] = '⚽';
+                    f[counter] = moon[moonCounter];
+                    moonCounter += 1;
+                    if(moonCounter == moon.length-1){
+                        moonCounter = 0;
+                    }
                     location.hash = f.join('');
                     await sleep(50);
-                } 
+                }
             }
         }
         loop();

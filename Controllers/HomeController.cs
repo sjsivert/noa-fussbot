@@ -10,6 +10,7 @@ using vscodecore.Models;
 
 namespace vscodecore.Controllers
 {
+    // Unused //
     // [Route("api/Home")]
     // [ApiController]
     public class HomeController : Controller
