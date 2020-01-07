@@ -1,30 +1,28 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jonas.rolstad\\source\\repos\\vscodecore\\vscodecore.csproj": {}
+    "/Users/andreas.schafferer/Projects/makingfuss/vscodecore.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jonas.rolstad\\source\\repos\\vscodecore\\vscodecore.csproj": {
+    "/Users/andreas.schafferer/Projects/makingfuss/vscodecore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jonas.rolstad\\source\\repos\\vscodecore\\vscodecore.csproj",
+        "projectUniqueName": "/Users/andreas.schafferer/Projects/makingfuss/vscodecore.csproj",
         "projectName": "vscodecore",
-        "projectPath": "C:\\Users\\jonas.rolstad\\source\\repos\\vscodecore\\vscodecore.csproj",
-        "packagesPath": "C:\\Users\\jonas.rolstad\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jonas.rolstad\\source\\repos\\vscodecore\\obj\\",
+        "projectPath": "/Users/andreas.schafferer/Projects/makingfuss/vscodecore.csproj",
+        "packagesPath": "/Users/andreas.schafferer/.nuget/packages/",
+        "outputPath": "/Users/andreas.schafferer/Projects/makingfuss/obj/",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\jonas.rolstad\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/andreas.schafferer/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -90,8 +88,12 @@
               "version": "[3.0.1, 3.0.1]"
             },
             {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "name": "Microsoft.NETCore.App.Host.osx-x64",
               "version": "[3.0.1, 3.0.1]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
             }
           ],
           "frameworkReferences": {
@@ -102,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.100/RuntimeIdentifierGraph.json"
         }
       }
     }
