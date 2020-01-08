@@ -5,19 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using vscodecore.Models;
-using System.Net.Http;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-using System.Diagnostics;
 using System.Web;
-using Newtonsoft.Json.Linq;
-using System.Net;
+
+using vscodecore.Services;
 
 namespace vscodecore.Controllers
 {
     public class ContesterController : Controller
     {
-        private static readonly HttpClient client = new HttpClient();
+        private static readonly SlackService slackService = new SlackService();
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -44,7 +40,7 @@ namespace vscodecore.Controllers
             {
                 message = $"➖ {capitalizedName} kan ikke nå!";
             }
-            await LogToSlack(message);
+            await slackService.LogToSlack(message);
             return Ok();
         }
 
@@ -53,7 +49,7 @@ namespace vscodecore.Controllers
         {
             if (payload.text == "score") // TODO: Switch statement instead
             {
-                await postLeaderboard();
+                await PostLeaderboard();
             }
             else
             {
@@ -82,7 +78,8 @@ namespace vscodecore.Controllers
                 context.Add(contester);
                 await context.SaveChangesAsync();
                 string welcomeMessage = $":crossed_swords: A new contester has signed up! :crossed_swords: Welcome {contester.ToString()}";
-                LogToSlack(welcomeMessage);
+                
+                await slackService.LogToSlack(welcomeMessage);
             }
             return RedirectToAction("Index");
         }
@@ -101,13 +98,13 @@ namespace vscodecore.Controllers
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 await context.SaveChangesAsync();
                 string message = $"{contester.ToString()} submitted a win.";
-                LogToSlack(message);
+                await slackService.LogToSlack(message);
             }
             var leaderPost = await checkLeaderPost();
             if (leaderPre != leaderPost.ContesterId)
             {
                 string winnerMessage = $":crown: :crown: :crown: {leaderPost.ToString()} is now the new leader :crown: :crown: :crown:";
-                LogToSlack(winnerMessage);
+                await slackService.LogToSlack(winnerMessage);
             }
             return RedirectToAction("Index");
         }
@@ -125,13 +122,13 @@ namespace vscodecore.Controllers
                 contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
                 await context.SaveChangesAsync();
                 string message = $"{contester.ToString()} submitted a loss.";
-                LogToSlack(message);
+                await slackService.LogToSlack(message);
             }
             var leaderPost = await checkLeaderPost();
             if (leaderPre != leaderPost.ContesterId)
             {
                 string winnerMessage = $":crown: :crown: :crown: {leaderPost.ToString()} is now the new leader :crown: :crown: :crown:";
-                LogToSlack(winnerMessage);
+                await slackService.LogToSlack(winnerMessage);
             }
             return RedirectToAction("Index");
         }
@@ -145,8 +142,7 @@ namespace vscodecore.Controllers
             {
                 proposer = $"{user} er klar for spill!";
             }
-            var jsonstring = $"{{\"blocks\": [ {{ \"type\": \"section\", \"text\": {{ \"type\": \"mrkdwn\", \"text\": \":soccer::exclamation:Fussball time:exclamation::soccer:\" }} }}, {{ \"type\": \"section\", \"fields\": [ {{ \"type\": \"mrkdwn\", \"text\": \"{proposer} Er du med? @here \" }} ] }}, {{ \"type\": \"actions\", \"elements\": [ {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Let's go!\" }}, \"style\": \"primary\", \"value\": \"click_me_go\" }}, {{ \"type\": \"button\", \"text\": {{ 	\"type\": \"plain_text\", 	\"emoji\": true, 	\"text\": \"Kan ikke...\" }}, \"style\": \"danger\", \"value\": \"click_me_no\" }} ] }} 	] }}";
-            var callback = client.PostAsync(Environment.GetEnvironmentVariable("slackwebhookurl"), new StringContent(jsonstring));
+            await slackService.ProposeNewgame(null);
             return RedirectToAction("Index");
         }
 
@@ -161,12 +157,6 @@ namespace vscodecore.Controllers
             return nameCapitalized;
         }
         // Posts a submit to Slack (via a Function App)
-        public async Task<string> LogToSlack(string message)
-        {
-            using var client = new HttpClient();
-            var result = await client.PostAsync($"https://logthistoslack.azurewebsites.net/api/HttpTriggByLog?code=Zm07T1iKXKtCF0/o1MGKBOa/epaltK4Ko2CfzGd7ZZQGQE2iupWleg==&message={message}", null);
-            return "ok";
-        }
 
         // Calculate Win-loss ratio
         public double calculateWinLossRatio(int score, int gamesPlayed)
@@ -213,7 +203,7 @@ namespace vscodecore.Controllers
             return leaderPost[0];
         }
 
-        public async Task<string> postLeaderboard()
+        public async Task<Task> PostLeaderboard()
         {
             var scopeTop5 = Enumerable.Empty<Contester>();
             using (var context = new EFCoreWebFussballContext())
@@ -223,10 +213,7 @@ namespace vscodecore.Controllers
                 scopeTop5 = res;
             }
 
-            var jsonstring = $"{{\"blocks\":[{{\"type\":\"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Scoreboard*\"}}}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(0).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(0).Ratio.ToString()}\"}},{{\"type\": \"mrkdwn\",\"text\": \"*Wins: *\n{scopeTop5.ElementAt(0).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(0).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(1).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(1).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(1).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(1).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(2).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(2).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(2).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(2).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(3).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(3).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(3).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(3).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}},{{\"type\":\"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*{scopeTop5.ElementAt(4).ToString()}*\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Ratio:*\n{scopeTop5.ElementAt(4).Ratio.ToString()}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Wins:*\n{scopeTop5.ElementAt(4).Score}\"}},{{\"type\":\"mrkdwn\",\"text\":\"*Games played:*\n{scopeTop5.ElementAt(4).GamesPlayed}\"}}]}},{{\"type\":\"divider\"}}]}}";
-            using var client = new HttpClient();
-            var result = await client.PostAsync($"https://logthistoslack.azurewebsites.net/api/ShowScoreboard?code=cI4VLMJqwjryhUBXb2otf6wovsRV1W/UxaGviryixhRrvLqc8/44TA==&scoreboard={jsonstring}", null);
-            return "ok";
+            return slackService.PostTop5Scoreboard(scopeTop5);
         }
 
 
