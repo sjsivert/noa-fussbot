@@ -1,8 +1,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using vscodecore.Models;
+using MakingFuss.Models;
 
-namespace vscodecore.Models
+namespace MakingFuss.Models
 {
     public class EFCoreWebFussballContext : DbContext
     {

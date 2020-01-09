@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using vscodecore.Models;
+using MakingFuss.Models;
 
-namespace vscodecore.Migrations
+namespace MakingFuss.Migrations
 {
     [DbContext(typeof(EFCoreWebFussballContext))]
     partial class EFCoreWebFussballContextModelSnapshot : ModelSnapshot

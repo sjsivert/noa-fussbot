@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using vscodecore.Models;
-using vscodecore.Utils.Helpers;
+using MakingFuss.Models;
+using MakingFuss.Utils.Helpers;
 using System.Linq;
 
-namespace vscodecore.Services
+namespace MakingFuss.Services
 {
 
     public class SlackService

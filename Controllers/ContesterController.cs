@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using vscodecore.Models;
+using MakingFuss.Models;
 using System.Web;
 
-using vscodecore.Services;
+using MakingFuss.Services;
 
-namespace vscodecore.Controllers
+namespace MakingFuss.Controllers
 {
     public class ContesterController : Controller
     {
