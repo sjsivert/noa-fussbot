@@ -165,6 +165,8 @@ namespace vscodecore.Services
                     }
                 }
             };
+
+            // Add the contestor blocks with a divider object in between
             payload.blocks.AddRange(contestorBlocks.SelectMany(c => new dynamic[] { new { type = "divider" }, c }));
 
             return JsonConvert.SerializeObject(payload);
