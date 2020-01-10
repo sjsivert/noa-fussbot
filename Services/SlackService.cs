@@ -59,7 +59,7 @@ namespace MakingFuss.Services
                         fields = new List<dynamic>() {
                             new {
                                 type = "mrkdwn",
-                                text = $"{proposingUser?.FirstName ?? " "}Er du med? { (Helpers.IsDevelopment() ? "" : "@here") }"
+                                text = $"{proposingUser?.Name ?? " "}Er du med? { (Helpers.IsDevelopment() ? "" : "@here") }"
                             }
                         }
                     },
@@ -133,12 +133,12 @@ namespace MakingFuss.Services
                    fields = new List<dynamic>() {
                         new {
                             type = "mrkdwn",
-                            text = $"*{c.ToString()}* {(sta.Count != 0 ? sta.Pop() : "")}"
+                            text = $"*{c.Name}* {(sta.Count != 0 ? sta.Pop() : "")}"
 
                         },
                          new {
                             type = "mrkdwn",
-                            text = $"*Ratio*\n{c.Ratio.ToString()}"
+                            text = $"*Ratio*\n{Math.Round(c.Ratio)}"
                         },
                          new {
                             type = "mrkdwn",
