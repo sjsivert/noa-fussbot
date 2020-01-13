@@ -138,7 +138,7 @@ namespace MakingFuss.Services
                         },
                          new {
                             type = "mrkdwn",
-                            text = $"*Ratio*\n{Math.Round(c.Ratio)}"
+                            text = $"*Ratio*\n{@String.Format("{0:0.00}", c.Ratio)}"
                         },
                          new {
                             type = "mrkdwn",
