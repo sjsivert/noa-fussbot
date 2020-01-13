@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using vscodecore.Models;
+using MakingFuss.Models;
 
-namespace vscodecore.Migrations
+namespace MakingFuss.Migrations
 {
     [DbContext(typeof(EFCoreWebFussballContext))]
     [Migration("20191015091927_lastUpdatedProperty")]

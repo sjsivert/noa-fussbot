@@ -1,6 +1,6 @@
 using System;
 
-namespace vscodecore.Models
+namespace MakingFuss.Models
 {
     public class ErrorViewModel
     {

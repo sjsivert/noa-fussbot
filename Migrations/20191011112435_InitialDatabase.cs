@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace vscodecore.Migrations
+namespace MakingFuss.Migrations
 {
     public partial class InitialDatabase : Migration
     {
