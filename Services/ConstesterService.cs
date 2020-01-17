@@ -71,5 +71,13 @@ namespace MakingFuss.Services
                 await db.SaveChangesAsync();
             }
         }
+
+        public async Task<Contester> getUserBySlackId(string slackId)
+        {
+            using (var db = new EFCoreWebFussballContext())
+            {
+                return await db.Contesters.SingleAsync(x => x.SlackUserId == slackId);
+            }
+        }
     }
 }

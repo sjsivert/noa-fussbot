@@ -65,8 +65,8 @@
                   }
                   <td>@placing</td>
                   <td>@contester.Name</td>
-                  <td>@Html.ActionLink("➕", "AddWin","Contester", new {contester.ContesterId}, null )</td>
-                  <td>@Html.ActionLink("➖","AddLoss","Contester", new{contester.ContesterId}, null )</td>
+                  <td>@Html.ActionLink("➕", "AddWin", "Contester", new {contester.SlackUserId}, null )</td>
+                  <td>@Html.ActionLink("➖","AddLoss", "Contester", new {contester.SlackUserId}, null )</td>
                   <td><span style="margin-left:17px;">@contester.Score</span></td>
                   <td><span style="margin-left:44px;">@contester.GamesPlayed</span></td>
                     if(contester.Score != 0 || contester.GamesPlayed != 0){
