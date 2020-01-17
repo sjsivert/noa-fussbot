@@ -13,6 +13,7 @@ namespace MakingFuss.Services
     public class SlackService
     {
         private readonly string? _slackWebhookUrl;
+        private readonly string? _slackOauthToken;
         private readonly string LETS_PLAY_BUTTON_VALUE = "click_me_go";
         private readonly string CANT_PLAY_BUTTON_VALUE = "click_me_no";
 
@@ -20,10 +21,16 @@ namespace MakingFuss.Services
         public SlackService()
         {
             _slackWebhookUrl = Environment.GetEnvironmentVariable("SLACK_WEBHOOK_URL");
+            _slackOauthToken = Environment.GetEnvironmentVariable("SLACK_OAUTH_BOT_TOKEN");
 
             if (String.IsNullOrEmpty(_slackWebhookUrl))
             {
                 throw new Exception("SLACK_WEBHOOK_URL environment variable is not set!");
+            }
+            
+            if (String.IsNullOrEmpty(_slackOauthToken))
+            {
+                throw new Exception("SLACK_OAUTH_BOT_TOKEN environment variable is not set!");
             }
         }
 
@@ -59,7 +66,7 @@ namespace MakingFuss.Services
                         fields = new List<dynamic>() {
                             new {
                                 type = "mrkdwn",
-                                text = $"{proposingUser?.Name ?? " "}Er du med? { (Helpers.IsDevelopment() ? "" : "@here") }"
+                                text = $"{proposingUser?.Name ?? " "} wants to play. Are you in? { (Helpers.IsDevelopment() ? "" : "@here") }"
                             }
                         }
                     },
@@ -95,6 +102,26 @@ namespace MakingFuss.Services
             var blockJson = JsonConvert.SerializeObject(blocks);
 
             return this.PostToSlack(blockJson);
+        }
+
+        public async Task LogNewUser(Contester contester)
+        {
+            await LogToSlack($":crossed_swords: A new contester has signed up! :crossed_swords: Welcome {contester.Name}");
+        }
+
+        public async Task<SlackUserProfile> GetUserProfile(string slackUserId)
+        {
+            var client = new HttpClient();
+
+            var result = await client.PostAsync($"https://slack.com/api/users.info?token={_slackOauthToken}&user={slackUserId}", null);
+            
+            var slackResponse = JsonConvert.DeserializeObject<SlackUserProfileResponse>(await result.Content.ReadAsStringAsync());
+            
+            if (!slackResponse.Ok) {
+                throw new Exception($"Failed to get user info for user id '{slackUserId}', reason: '{slackResponse.Error}'");
+            }
+
+            return slackResponse.User.Profile;
         }
 
         public Task PostTop5Scoreboard(IEnumerable<Contester> top5Contesters)

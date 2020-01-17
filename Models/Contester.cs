@@ -17,6 +17,7 @@ namespace MakingFuss.Models
         public int Score { get; set; } = 0;
         public int GamesPlayed { get; set; } = 0;
 
+        public string SlackUserId { get; set; } = "";
         public string LastUpdated { get; set; } = DateTime.Now.ToString("H:mm dd/MM");
         public bool IsActive { get; set; }
 

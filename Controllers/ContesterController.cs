@@ -51,11 +51,50 @@ namespace MakingFuss.Controllers
                 var leaders = (await contesterService.GetAllContestersOrderedByRatio()).Take(5);
                 await slackService.PostTop5Scoreboard(leaders);
             }
+            else if (payload.text == "enroll") {
+                
+                var contester = new Contester();
+                var slackUserId = payload.user_id;
+
+                SlackUserProfile userProfile;
+                try {
+                    userProfile = await slackService.GetUserProfile(slackUserId);
+                }
+                catch (Exception e) {
+                    await slackService.LogToSlack(e.Message);
+                    throw e;
+                }
+
+                contester.Name = userProfile.RealNameNormalized;
+                contester.SlackUserId = slackUserId;
+
+                await contesterService.AddNew(contester);
+                await slackService.LogNewUser(contester);
+
+            }
+            else if (payload.text == "reveal_id") {
+                
+                await slackService.LogToSlack($"<@{payload.user_id}> user id is *{payload.user_id}*");
+
+            }
+            else if (payload.text == "win") {
+                await RegisterWin(payload.user_id);
+            }
+            else if (payload.text == "loss") {
+                await RegisterLoss(payload.user_id);
+            }
             else
             {
                 // TODO: get Contester by slack handle
-                var user = UppercaseName(payload.user_name);
-                await ProposeGame(user);
+                Contester user;
+                try {
+                    user = await contesterService.getUserBySlackId(payload.user_id);
+                }
+                catch (InvalidOperationException e) {
+                    await slackService.LogToSlack($"Can't find the user profile for id {payload.user_id}. Have you done `/fuss enroll`?");
+                    throw e;
+                }
+                await slackService.ProposeNewgame(user);
             }
             return Ok();
         }
@@ -67,21 +106,47 @@ namespace MakingFuss.Controllers
         }
 
         [HttpPost] // Create a new contester
-        public async Task<IActionResult> Create([Bind("Name")] Contester contester)
+        public async Task<IActionResult> Create([Bind("Name", "SlackUserId")] Contester contester)
         {
   
 
             await contesterService.AddNew(contester);
-            await slackService.LogToSlack($":crossed_swords: A new contester has signed up! :crossed_swords: Welcome {contester.Name}");
+            await slackService.LogNewUser(contester);
 
             return RedirectToAction("Index");
         }
 
         [HttpGet] // Submit a win // Fordi ActionLink er en GET.. (?)
-        public async Task<IActionResult> AddWin(int contesterId)
+        public async Task<IActionResult> AddWin(string SlackUserId)
         {
+            await RegisterWin(SlackUserId);
+            
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet] // Submit a loss
+        public async Task<IActionResult> AddLoss(string SlackUserId)
+        {
+            await RegisterLoss(SlackUserId);
+            return RedirectToAction("Index");
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> ProposeGame()
+        {
+            await slackService.ProposeNewgame(null);
+            return RedirectToAction("Index");
+        }
+
+
+
+
+        ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
+
+        private async Task RegisterWin(string contesterId) {
             var leaderPre = await contesterService.GetLeader();
-            var contester = await contesterService.GetById(contesterId);
+            var contester = await contesterService.getUserBySlackId(contesterId);
 
             await contesterService.RegisterWin(contester);
             await slackService.LogToSlack($"{contester.Name} submitted a win.");
@@ -90,17 +155,13 @@ namespace MakingFuss.Controllers
 
             if (leaderPre.ContesterId != leaderPost.ContesterId)
             {
-                await slackService.LogToSlack($":crown: :crown: :crown: {leaderPost.Name} is now the new leader :crown: :crown: :crown:");
+                await slackService.LogToSlack($":crown: :crown: :crown: <@{leaderPost.SlackUserId}> is now the new leader :crown: :crown: :crown:");
             }
-            return RedirectToAction("Index");
         }
-
-        [HttpGet] // Submit a loss
-        public async Task<IActionResult> AddLoss(int contesterId)
-        {
-            var leaderPre = await contesterService.GetLeader();
+        private async Task RegisterLoss(string contesterId) {
+        var leaderPre = await contesterService.GetLeader();
             
-            var contester = await contesterService.GetById(contesterId);
+            var contester = await contesterService.getUserBySlackId(contesterId);
             await contesterService.RegisterLoss(contester);
             
             await slackService.LogToSlack($"{contester.Name} submitted a loss.");
@@ -109,28 +170,11 @@ namespace MakingFuss.Controllers
             
             if (leaderPre.ContesterId != leaderPost.ContesterId)
             {
-                await slackService.LogToSlack($":crown: :crown: :crown: {leaderPost.Name} is now the new leader :crown: :crown: :crown:");
+                await slackService.LogToSlack($":crown: :crown: :crown: <@{leaderPost.SlackUserId}> is now the new leader :crown: :crown: :crown:");
             }
-            return RedirectToAction("Index");
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> ProposeGame(string? user = "")
-        {
-            var proposer = "";
-            if (user != "")
-            {
-                proposer = $"{user} er klar for spill!";
-            }
-            await slackService.ProposeNewgame(null); // TODO: get contestor and pass Contestor object
-            return RedirectToAction("Index");
-        }
-
-
-
-
-        ///////////////////// HELPER FUNCTIONS //////////////////////////////////////
 
         public string UppercaseName(string userName)
         {
