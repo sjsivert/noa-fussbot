@@ -59,7 +59,7 @@ namespace MakingFuss.Controllers
 
                 if (await contesterService.IsEnrolledBySlackId(slackUserId))
                 {
-                    await slackService.LogToSlack($"Cannot enroll new contester. <@{slackUserId}> is allready enrolled!");
+                    await slackService.LogToSlack($"Cannot enroll new contester. <@{slackUserId}> is already enrolled!");
                 }
                 else
                 {
