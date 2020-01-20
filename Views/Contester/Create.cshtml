@@ -7,6 +7,7 @@
   <div class="form-group">
     @Html.LabelFor(model => model.Name)
     @Html.TextBoxFor(model => model.Name, new { @class="form-control"}) 
+    @Html.TextBoxFor(model => model.SlackUserId, new { @class="form-control"}) 
   </div>
   @* TODO: Add Slack handle *@
   <button type="submit" class="btn btn-warning">Submit</button>
