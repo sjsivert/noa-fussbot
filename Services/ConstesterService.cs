@@ -79,5 +79,12 @@ namespace MakingFuss.Services
                 return await db.Contesters.SingleAsync(x => x.SlackUserId == slackId);
             }
         }
+
+        public async Task<bool> IsEnrolledBySlackId(string slackId) {
+            using (var db = new EFCoreWebFussballContext())
+            {
+                return await db.Contesters.AnyAsync(x => x.SlackUserId == slackId);
+            }
+        }
     }
 }
