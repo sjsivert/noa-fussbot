@@ -124,12 +124,12 @@ namespace MakingFuss.Services
             return slackResponse.User.Profile;
         }
 
-        public Task PostTop5Scoreboard(IEnumerable<Contester> top5Contesters)
+        public Task PostTop10Scoreboard(IEnumerable<Contester> top10Contesters)
         {
             // ensure ordered
-            top5Contesters = top5Contesters.OrderByDescending(x => x.Ratio);
+            top10Contesters = top10Contesters.OrderByDescending(x => x.Ratio);
 
-            string payload = BuildScoreboardPayload(top5Contesters);
+            string payload = BuildScoreboardPayload(top10Contesters);
 
             return PostToSlack(payload);
 
@@ -150,7 +150,7 @@ namespace MakingFuss.Services
 
         }
         private string BuildScoreboardPayload(IEnumerable<Contester> contesters) {
-            var medals  = new[] { ":medal:", ":second_place_medal:", ":third_place_medal:", ":champagne:", ":baby_bottle:" };
+            var medals  = new[] { ":medal:", ":second_place_medal:", ":third_place_medal:", ":champagne:", ":wine_glass:", ":beer:", ":glass_of_milk:", ":baby_bottle:", ":basket_ball:", ":clown_face:" };
             var sta = new Stack<string>(medals.Reverse());
 
             var contestorBlocks = contesters.Select(c =>

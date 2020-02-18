@@ -48,8 +48,8 @@ namespace MakingFuss.Controllers
         {
             if (payload.text == "score") // TODO: Switch statement instead
             {
-                var leaders = (await contesterService.GetAllContestersOrderedByRatio()).Take(5);
-                await slackService.PostTop5Scoreboard(leaders);
+                var leaders = (await contesterService.GetAllContestersOrderedByRatio()).Take(10);
+                await slackService.PostTop10Scoreboard(leaders);
             }
             else if (payload.text == "enroll")
             {
