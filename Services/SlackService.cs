@@ -150,7 +150,7 @@ namespace MakingFuss.Services
 
         }
         private string BuildScoreboardPayload(IEnumerable<Contester> contesters) {
-            var medals  = new[] { ":medal:", ":second_place_medal:", ":third_place_medal:", ":champagne:", ":wine_glass:", ":beer:", ":glass_of_milk:", ":baby_bottle:", ":basket_ball:", ":clown_face:" };
+            var medals  = new[] { ":medal:", ":second_place_medal:", ":third_place_medal:", ":champagne:", ":wine_glass:", ":beer:", ":glass_of_milk:", ":baby_bottle:", ":basketball:", ":clown_face:" };
             var sta = new Stack<string>(medals.Reverse());
 
             var contestorBlocks = contesters.Select(c =>
