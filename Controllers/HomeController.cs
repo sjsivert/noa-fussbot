@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MakingFuss.Models;
+using MakingFuss.Data;
 
 namespace MakingFuss.Controllers
 {

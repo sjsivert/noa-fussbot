@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace MakingFuss.Models
+namespace MakingFuss.Data
 {
     public class Contester
     {

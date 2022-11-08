@@ -1,6 +1,6 @@
 using System;
 
-namespace MakingFuss.Models
+namespace MakingFuss.Data
 {
     public class ErrorViewModel
     {

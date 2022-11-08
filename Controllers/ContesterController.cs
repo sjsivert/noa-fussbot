@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MakingFuss.Models;
+using MakingFuss.Data;
 using System.Web;
 
 using MakingFuss.Services;

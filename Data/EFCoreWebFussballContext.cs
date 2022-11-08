@@ -1,13 +1,14 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using MakingFuss.Models;
+using MakingFuss.Data;
 
-namespace MakingFuss.Models
+namespace MakingFuss.Data
 {
     public class EFCoreWebFussballContext : DbContext
     {
         public DbSet<Contester> Contesters { get; set; }
         // public DbSet<Tournament> Tournaments { get; set; }
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {   
             var connectionString = Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING");

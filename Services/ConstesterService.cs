@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Linq;
-using MakingFuss.Models;
+using MakingFuss.Data;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 

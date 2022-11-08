@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using MakingFuss.Models;
+using MakingFuss.Data;
 using MakingFuss.Utils.Helpers;
 using System.Linq;
 

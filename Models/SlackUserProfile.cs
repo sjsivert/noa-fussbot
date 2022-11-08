@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 
 
-namespace MakingFuss.Models
+namespace MakingFuss.Data
 {
     public class SlackUserProfileResponse
     {
