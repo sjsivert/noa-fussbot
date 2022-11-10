@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 using MakingFuss.Data;
 using MakingFuss.Utils.Helpers;
 using System.Linq;
+using MakingFuss.Configuration;
+using Microsoft.Extensions.Options;
+using Action = System.Action;
 
 namespace MakingFuss.Services
 {
@@ -17,11 +20,15 @@ namespace MakingFuss.Services
         private readonly string LETS_PLAY_BUTTON_VALUE = "click_me_go";
         private readonly string CANT_PLAY_BUTTON_VALUE = "click_me_no";
 
+        private readonly IOptions<SlackConfiguration> slackConfiguration;
 
-        public SlackService()
+
+        public SlackService(IOptions<SlackConfiguration> slackConfiguration)
         {
-            _slackWebhookUrl = Environment.GetEnvironmentVariable("SLACK_WEBHOOK_URL");
-            _slackOauthToken = Environment.GetEnvironmentVariable("SLACK_OAUTH_BOT_TOKEN");
+            this.slackConfiguration = slackConfiguration;
+            Console.WriteLine("slack webook" + slackConfiguration.Value.SlackWebhookToken);
+            _slackWebhookUrl = slackConfiguration.Value.SlackWebhookToken;
+            _slackOauthToken = slackConfiguration.Value.SlackOathBotToken;
 
             if (String.IsNullOrEmpty(_slackWebhookUrl))
             {

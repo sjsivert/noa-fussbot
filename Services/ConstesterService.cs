@@ -1,32 +1,34 @@
 using System;
-using System.Threading.Tasks;
-using System.Linq;
-using MakingFuss.Data;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MakingFuss.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MakingFuss.Services
 {
     public class ContesterService
     {
+        // TODO: Make service available EFCoreWebFussballContext to eliminate duplicate code
+        private readonly EFCoreWebFussballContext _Context;
+
+        public ContesterService(EFCoreWebFussballContext context)
+        {
+            _Context = context;
+        }
 
 
         public async Task<List<Contester>> GetAllContestersOrderedByRatio()
         {
-            using (var db = new EFCoreWebFussballContext())
-            {
+            var contesters = await _Context.Contesters
+                .AsNoTracking()
+                .ToListAsync();
 
-                var contesters = await db.Contesters
-                            .AsNoTracking()
-                            .ToListAsync();
-
-                // Since Ratio is a computed property, we cannot sort in the query itself
-                return contesters
-                        .OrderByDescending(x => x.Ratio)
-                        .ThenByDescending(x => x.GamesPlayed)
-                        .ToList();
-            }
-
+            // Since Ratio is a computed property, we cannot sort in the query itself
+            return contesters
+                .OrderByDescending(x => x.Ratio)
+                .ThenByDescending(x => x.GamesPlayed)
+                .ToList();
         }
 
         public async Task<Contester> GetLeader()
@@ -34,57 +36,42 @@ namespace MakingFuss.Services
             return (await GetAllContestersOrderedByRatio()).First();
         }
 
-        public async Task<Contester> GetById(int id) {
-            using (var db = new EFCoreWebFussballContext())
-            {
-                 return await db.Contesters.FindAsync(id);
-            }
+        public async Task<Contester> GetById(int id)
+        {
+            return await _Context.Contesters.FindAsync(id);
         }
 
         public async Task AddNew(Contester contester)
         {
-            using (var db = new EFCoreWebFussballContext())
-            {
-                await db.Contesters.AddAsync(contester);
-                await db.SaveChangesAsync();
-            }
+            await _Context.Contesters.AddAsync(contester);
+            await _Context.SaveChangesAsync();
         }
 
         public async Task RegisterWin(Contester contester)
         {
-            using (var db = new EFCoreWebFussballContext())
-            {
-                contester.Score += 1;
-                contester.GamesPlayed += 1;
-                contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
-                db.Update(contester);
-                await db.SaveChangesAsync();
-            }
+            contester.Score += 1;
+            contester.GamesPlayed += 1;
+            contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
+            _Context.Update(contester);
+            await _Context.SaveChangesAsync();
         }
+
         public async Task RegisterLoss(Contester contester)
         {
-            using (var db = new EFCoreWebFussballContext())
-            {
-                contester.GamesPlayed += 1;
-                contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
-                db.Update(contester);
-                await db.SaveChangesAsync();
-            }
+            contester.GamesPlayed += 1;
+            contester.LastUpdated = DateTime.Now.ToString("H:mm dd/MM");
+            _Context.Update(contester);
+            await _Context.SaveChangesAsync();
         }
 
         public async Task<Contester> getUserBySlackId(string slackId)
         {
-            using (var db = new EFCoreWebFussballContext())
-            {
-                return await db.Contesters.SingleAsync(x => x.SlackUserId == slackId);
-            }
+            return await _Context.Contesters.SingleAsync(x => x.SlackUserId == slackId);
         }
 
-        public async Task<bool> IsEnrolledBySlackId(string slackId) {
-            using (var db = new EFCoreWebFussballContext())
-            {
-                return await db.Contesters.AnyAsync(x => x.SlackUserId == slackId);
-            }
+        public async Task<bool> IsEnrolledBySlackId(string slackId)
+        {
+            return await _Context.Contesters.AnyAsync(x => x.SlackUserId == slackId);
         }
     }
 }

@@ -2,9 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MakingFuss.Configuration;
+using MakingFuss.Controllers;
+using MakingFuss.Data;
+using MakingFuss.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,8 +28,21 @@ namespace MakingFuss
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            var slackConfiguration = Configuration.GetSection("Slack");
+            services.Configure<SlackConfiguration>(slackConfiguration);
             
+            Console.WriteLine("hei");
+            Console.WriteLine(Configuration.GetConnectionString("FussBallDataBase"));
+            
+            services.AddControllersWithViews();
+            // services.AddDbContext<EFCoreWebFussballContext>();
+            services.AddDbContext<EFCoreWebFussballContext>(
+                options => options.UseSqlServer(Configuration.GetConnectionString("FussBallDataBase"))
+            );
+            services.AddScoped<ContesterService>();
+            services.AddScoped<SlackService>();
+            services.AddControllers();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

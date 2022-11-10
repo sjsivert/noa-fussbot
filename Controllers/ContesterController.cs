@@ -13,13 +13,19 @@ namespace MakingFuss.Controllers
 {
     public class ContesterController : Controller
     {
-        private static readonly SlackService slackService = new SlackService();
-        private static readonly ContesterService contesterService = new ContesterService();
+        private static ContesterService ContesterService;
+        private static SlackService SlackService;
+
+        public ContesterController(ContesterService contesterService, SlackService slackService)
+        {
+            ContesterService = contesterService;
+            SlackService = slackService;
+        }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var allContesters = await contesterService.GetAllContestersOrderedByRatio();
+            var allContesters = await ContesterService.GetAllContestersOrderedByRatio();
             return View(allContesters);
 
         }
@@ -39,7 +45,7 @@ namespace MakingFuss.Controllers
             {
                 message = $"➖ {capitalizedName} kan ikke nå!";
             }
-            await slackService.LogToSlack(message);
+            await SlackService.LogToSlack(message);
             return Ok();
         }
 
@@ -48,8 +54,8 @@ namespace MakingFuss.Controllers
         {
             if (payload.text == "score") // TODO: Switch statement instead
             {
-                var leaders = (await contesterService.GetAllContestersOrderedByRatio()).Take(10);
-                await slackService.PostTop10Scoreboard(leaders);
+                var leaders = (await ContesterService.GetAllContestersOrderedByRatio()).Take(10);
+                await SlackService.PostTop10Scoreboard(leaders);
             }
             else if (payload.text == "enroll")
             {
@@ -57,28 +63,28 @@ namespace MakingFuss.Controllers
                 var contester = new Contester();
                 var slackUserId = payload.user_id;
 
-                if (await contesterService.IsEnrolledBySlackId(slackUserId))
+                if (await ContesterService.IsEnrolledBySlackId(slackUserId))
                 {
-                    await slackService.LogToSlack($"Cannot enroll new contester. <@{slackUserId}> is already enrolled!");
+                    await SlackService.LogToSlack($"Cannot enroll new contester. <@{slackUserId}> is already enrolled!");
                 }
                 else
                 {
                     SlackUserProfile userProfile;
                     try
                     {
-                        userProfile = await slackService.GetUserProfile(slackUserId);
+                        userProfile = await SlackService.GetUserProfile(slackUserId);
                     }
                     catch (Exception e)
                     {
-                        await slackService.LogToSlack(e.Message);
+                        await SlackService.LogToSlack(e.Message);
                         throw e;
                     }
 
                     contester.Name = userProfile.RealNameNormalized;
                     contester.SlackUserId = slackUserId;
 
-                    await contesterService.AddNew(contester);
-                    await slackService.LogNewUser(contester);
+                    await ContesterService.AddNew(contester);
+                    await SlackService.LogNewUser(contester);
                 }
 
 
@@ -86,7 +92,7 @@ namespace MakingFuss.Controllers
             else if (payload.text == "reveal_id")
             {
 
-                await slackService.LogToSlack($"<@{payload.user_id}> user id is *{payload.user_id}*");
+                await SlackService.LogToSlack($"<@{payload.user_id}> user id is *{payload.user_id}*");
 
             }
             else if (payload.text == "win")
@@ -103,14 +109,14 @@ namespace MakingFuss.Controllers
                 Contester user;
                 try
                 {
-                    user = await contesterService.getUserBySlackId(payload.user_id);
+                    user = await ContesterService.getUserBySlackId(payload.user_id);
                 }
                 catch (InvalidOperationException e)
                 {
-                    await slackService.LogToSlack($"Can't find the user profile for id {payload.user_id}. Have you done `/fuss enroll`?");
+                    await SlackService.LogToSlack($"Can't find the user profile for id {payload.user_id}. Have you done `/fuss enroll`?");
                     throw e;
                 }
-                await slackService.ProposeNewgame(user);
+                await SlackService.ProposeNewgame(user);
             }
             return Ok();
         }
@@ -126,8 +132,8 @@ namespace MakingFuss.Controllers
         {
 
 
-            await contesterService.AddNew(contester);
-            await slackService.LogNewUser(contester);
+            await ContesterService.AddNew(contester);
+            await SlackService.LogNewUser(contester);
 
             return RedirectToAction("Index");
         }
@@ -151,7 +157,7 @@ namespace MakingFuss.Controllers
         [HttpGet]
         public async Task<IActionResult> ProposeGame()
         {
-            await slackService.ProposeNewgame(null);
+            await SlackService.ProposeNewgame(null);
             return RedirectToAction("Index");
         }
 
@@ -162,33 +168,33 @@ namespace MakingFuss.Controllers
 
         private async Task RegisterWin(string contesterId)
         {
-            var leaderPre = await contesterService.GetLeader();
-            var contester = await contesterService.getUserBySlackId(contesterId);
+            var leaderPre = await ContesterService.GetLeader();
+            var contester = await ContesterService.getUserBySlackId(contesterId);
 
-            await contesterService.RegisterWin(contester);
-            await slackService.LogToSlack($"{contester.Name} submitted a win.");
+            await ContesterService.RegisterWin(contester);
+            await SlackService.LogToSlack($"{contester.Name} submitted a win.");
 
-            var leaderPost = await contesterService.GetLeader();
+            var leaderPost = await ContesterService.GetLeader();
 
             if (leaderPre.ContesterId != leaderPost.ContesterId)
             {
-                await slackService.LogToSlack($":crown: :crown: :crown: <@{leaderPost.SlackUserId}> is now the new leader :crown: :crown: :crown:");
+                await SlackService.LogToSlack($":crown: :crown: :crown: <@{leaderPost.SlackUserId}> is now the new leader :crown: :crown: :crown:");
             }
         }
         private async Task RegisterLoss(string contesterId)
         {
-            var leaderPre = await contesterService.GetLeader();
+            var leaderPre = await ContesterService.GetLeader();
 
-            var contester = await contesterService.getUserBySlackId(contesterId);
-            await contesterService.RegisterLoss(contester);
+            var contester = await ContesterService.getUserBySlackId(contesterId);
+            await ContesterService.RegisterLoss(contester);
 
-            await slackService.LogToSlack($"{contester.Name} submitted a loss.");
+            await SlackService.LogToSlack($"{contester.Name} submitted a loss.");
 
-            var leaderPost = await contesterService.GetLeader();
+            var leaderPost = await ContesterService.GetLeader();
 
             if (leaderPre.ContesterId != leaderPost.ContesterId)
             {
-                await slackService.LogToSlack($":crown: :crown: :crown: <@{leaderPost.SlackUserId}> is now the new leader :crown: :crown: :crown:");
+                await SlackService.LogToSlack($":crown: :crown: :crown: <@{leaderPost.SlackUserId}> is now the new leader :crown: :crown: :crown:");
             }
         }
 
