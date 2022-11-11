@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'noa-fussbot'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CF82E991D122400F97DE1264E41943BD }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0ADC325D80604D3F858C03EE750ED5B7 }}
           package: .
