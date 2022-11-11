@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
           path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Production'
@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'noa-fussbot'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_690AD0724B154EAABA712F4DF5BAA2E6 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CF82E991D122400F97DE1264E41943BD }}
           package: .
