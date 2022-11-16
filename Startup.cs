@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,6 +43,7 @@ namespace MakingFuss
             services.AddScoped<ContesterService>();
             services.AddScoped<SlackService>();
             services.AddControllers();
+            services.AddSwaggerGen();
 
         }
 
@@ -51,6 +53,11 @@ namespace MakingFuss
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger(options =>
+                {
+                    options.SerializeAsV2 = true;
+                });
+                app.UseSwaggerUI();
             }
             else
             {

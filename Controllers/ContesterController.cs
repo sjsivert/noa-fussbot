@@ -11,6 +11,8 @@ using MakingFuss.Services;
 
 namespace MakingFuss.Controllers
 {
+    [Route("[controller]/[action]")]
+    [ApiController]
     public class ContesterController : Controller
     {
         private static ContesterService ContesterService;
@@ -200,6 +202,7 @@ namespace MakingFuss.Controllers
 
 
 
+        [NonAction]
         public string UppercaseName(string userName)
         {
             var nameCapitalized = userName[0].ToString().ToUpper() + userName.Substring(1);
